@@ -1,0 +1,1838 @@
+{
+  "name": "Jamia Management System Multi-Segment Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "studentName",
+              "value": "={{ $json.studentName || $json['Student Name'] || $json['Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "guardianName",
+              "value": "={{ $json.Guardian }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber || $json['Phone Number'] || $json['Contact'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "email",
+              "value": "={{ $json.email || $json['Email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "96692fa1-bb2b-4ab0-9aa9-9ab2a24d2f8a",
+              "name": "Admission Date",
+              "value": "={{ $json['Admission Date'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "68a6ec5a-a0d0-474f-a2a7-9724edd1e51d",
+      "name": "Workflow Configuration - Admission",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "value": "={{ $json.studentName + $json.phoneNumber + $now.toISO() }}"
+      },
+      "id": "8e6afed0-340b-4f84-85a5-ba6b9b9c29ca",
+      "name": "Generate Student ID",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{$json.Fajr}}\n",
+              "rightValue": "Late",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $json.Zuhr }}",
+              "rightValue": "Absent",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ab2cb37a-a784-4d97-a24c-ae491a905de9",
+              "leftValue": "={{ $json.Maghrib }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "7286407e-0af3-4f74-8031-5c306b5664b7",
+      "name": "Check if Late or Absent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "studentID",
+              "value": "={{ $json.studen$json.IDtID || $json['Student ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "date",
+              "value": "={{ $json.date || $json['Date'] || $now.toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "progressScore",
+              "value": "={{ $json.progressScore || $json['Progress Score'] || $json['Score'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2b9df4d8-b283-4782-8ec6-16f477bea44f",
+      "name": "Workflow Configuration - Progress",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a data analyst. Analyze student progress scores over the last 7 days and determine if there is a declining trend for 3 or more consecutive days. Return structured JSON with declining (boolean), days (number), and reason (string)."
+        }
+      },
+      "id": "b38d553e-40b1-4179-9b77-c50a5e7dec3e",
+      "name": "Analyze Progress Trend",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "alertMessage",
+              "value": "={{ 'ALERT: Student ' + $json.studentID + ' showing declining progress for ' + $json.days + ' days. Reason: ' + $json.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "studentID",
+              "value": "={{ $json.studentID }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8939ebaa-107b-4715-866b-854e1b71b40d",
+      "name": "Prepare Admin Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "studentID",
+              "value": "={{ $json$json.ID.stu$json.IDdentID || $json['Student ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "examName",
+              "value": "={{ $json.$json.Name$json.ExamsexamName || $json['Exam Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "subject1",
+              "value": "={{ Number($json.subject1 || $json['Subject 1'] || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "subject2",
+              "value": "={{ Number($json.subject2 || $json['Subject 2'] || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "id-5",
+              "name": "subject3",
+              "value": "={{ Number($json.subject3 || $json['Subject 3'] || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fafa500a-aab9-428b-a257-32b140e8b5b9",
+      "name": "Workflow Configuration - Exam",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "totalMarks",
+              "value": "={{ $json.subject1 + $json.subject2 + $json.subject3 }}",
+              "type": "number"
+            },
+            {
+              "id": "id-2",
+              "name": "percentage",
+              "value": "={{ (($json.subject1 + $json.subject2 + $json.subject3) / 300 * 100).toFixed(2) }}",
+              "type": "number"
+            },
+            {
+              "id": "id-3",
+              "name": "grade",
+              "value": "={{ (($json.subject1 + $json.subject2 + $json.subject3) / 300 * 100) >= 80 ? 'A+' : (($json.subject1 + $json.subject2 + $json.subject3) / 300 * 100) >= 70 ? 'A' : (($json.subject1 + $json.subject2 + $json.subject3) / 300 * 100) >= 60 ? 'B' : (($json.subject1 + $json.subject2 + $json.subject3) / 300 * 100) >= 50 ? 'C' : 'F' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8b67a606-89bd-475c-aa45-20d819800bd0",
+      "name": "Calculate Total and Grade",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "908a5bd8-3521-4dbb-b3cb-3b17c47a44da",
+      "name": "Monthly Fee Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "currentMonth",
+              "value": "={{ $now.toFormat('MMMM yyyy') }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dueDate",
+              "value": "={{ $now.plus({days: 10}).toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "feeAmount",
+              "value": 5000,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7b719b43-3192-48db-a3c5-1232dc8b7ac8",
+      "name": "Workflow Configuration - Finance",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d4f824a4-ed11-4ad3-bd84-3d27f28fea7d",
+      "name": "Loop Over Students",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        496,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "reminderMessage",
+              "value": "={{ 'Assalamu Alaikum! Monthly fee reminder for ' + $('Loop Over Students').item.json.currentMonth + '. Amount: Rs. ' + $('Loop Over Students').item.json.feeAmount + '. Due date: ' + $('Loop Over Students').item.json.dueDate + '. Student: ' + $('Loop Over Students').item.json.studentID }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "490ea61f-b030-426e-9751-3dbaf1e59e31",
+      "name": "Prepare Fee Reminder Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs",
+          "mode": "list",
+          "cachedResultName": "Jamia Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Roll No."
+          ],
+          "schema": [
+            {
+              "id": "studentName",
+              "displayName": "studentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guardianName",
+              "displayName": "guardianName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phoneNumber",
+              "displayName": "phoneNumber",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Admission Date",
+              "displayName": "Admission Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "handlingExtraData": "ignoreIt",
+          "useAppend": true
+        }
+      },
+      "id": "f1141185-9dc2-47d1-bcfc-75095a0a51e1",
+      "name": "Store Student Record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 20
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io",
+          "mode": "list",
+          "cachedResultName": "Progress1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "4bffe865-52ea-4eb0-9302-0d611ff02641",
+      "name": "Progress Form Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        400
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "HV78LDFsoS68Y0CF",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io",
+          "mode": "list",
+          "cachedResultName": "Progress1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('Progress Form Trigger').item.json.ID }}",
+            "Emaiil": "={{ $('Progress Form Trigger').item.json.Emaiil }}",
+            "Phone": "={{ $('Progress Form Trigger').item.json.Phone }}",
+            "Name": "={{ $('Progress Form Trigger').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emaiil",
+              "displayName": "Emaiil",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4ac71f23-ffad-4be7-a4d0-2e9cc82cdaba",
+      "name": "Store Progress Data1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io",
+          "mode": "list",
+          "cachedResultName": "Progress1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q991fhQQo-wH6SZWfMSdz80EQYTFAgqcbxGyS5kw1Io/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "efe40ed8-d9f1-4376-9a72-ddda63aa41c9",
+      "name": "Fetch Last 7 Days Progress1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMonth"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow",
+          "mode": "list",
+          "cachedResultName": "Exams_Jamia",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "6004adbc-ff32-4faf-8415-fc1534385bb0",
+      "name": "Exam Marks Form Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        720
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "HV78LDFsoS68Y0CF",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow",
+          "mode": "list",
+          "cachedResultName": "Exams_Jamia",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yUtXiDP5N_DRxdQioA2z0tRm48NlDOoX73DQQoEBxow/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.studentID }}",
+            "Email": "={{ $('Exam Marks Form Trigger').item.json.Email }}",
+            "Name": "={{ $('Exam Marks Form Trigger').item.json.Name }}",
+            "Month": "={{ $('Exam Marks Form Trigger').item.json.Month }}",
+            "Exams": "={{ $('Exam Marks Form Trigger').item.json.Exams }}",
+            "Marks": "={{ $('Exam Marks Form Trigger').item.json.Marks }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Exams",
+              "displayName": "Exams",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Month",
+              "displayName": "Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Marks",
+              "displayName": "Marks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "106a6329-a081-41b6-bebe-a6962475d80b",
+      "name": "Save Exam Results1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        720
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs",
+          "mode": "list",
+          "cachedResultName": "Jamia Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "103d37ef-b331-4d33-a3ff-bb4ef05d1a85",
+      "name": "Read Active Students1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        1136
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1BSE-c5sEy1tgw-6OaVg5cIDUFYfiYfam_C0O1CKW23Y",
+          "mode": "list",
+          "cachedResultName": "Finance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BSE-c5sEy1tgw-6OaVg5cIDUFYfiYfam_C0O1CKW23Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1BSE-c5sEy1tgw-6OaVg5cIDUFYfiYfam_C0O1CKW23Y/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Read Active Students1').item.json.studentName }}",
+            "Email": "={{ $('Read Active Students1').item.json.email }}",
+            "Phone": "={{ $('Read Active Students1').item.json.phoneNumber }}",
+            "ID": "={{ $('Read Active Students1').item.json.data }}",
+            "Fee": "={{ $('Workflow Configuration - Finance').item.json.feeAmount }}",
+            "Month": "={{ $('Workflow Configuration - Finance').item.json.currentMonth }}",
+            "Due Date": "={{ $('Workflow Configuration - Finance').item.json.dueDate }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fee",
+              "displayName": "Fee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Month",
+              "displayName": "Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "161ff2b4-1c29-4d89-9690-5ad8a0b42895",
+      "name": "Create Fee Invoice Record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        1136
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1-NQk_KQqqjgWLlT_OpnrkcQNnTnWGxivBGo0TRxBAQo",
+          "mode": "list",
+          "cachedResultName": "Jamia Admissions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-NQk_KQqqjgWLlT_OpnrkcQNnTnWGxivBGo0TRxBAQo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-NQk_KQqqjgWLlT_OpnrkcQNnTnWGxivBGo0TRxBAQo/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "ffdcbb88-27a6-466a-bec1-5d32d8e7217e",
+      "name": "Admission Form Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -160
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "HV78LDFsoS68Y0CF",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "ID Card/Admission Confirmation",
+        "message": "=Please refer to the information below and confirm the detais;  {{ $json.studentName }} <br>\nS/O {{ $json.guardianName }} <br>\nPhone; {{ $json.phoneNumber }} <br>\nID {{ $json.data }} <br>\nAdmission Date {{ $json['Admission Date'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -160
+      ],
+      "id": "e51fa7fe-4ef8-4bb2-97a1-79f65a67dd77",
+      "name": "Send a message",
+      "webhookId": "75b4f2d6-9f3b-4028-948b-7cd87d354a47",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bWipNoRSPdvbiOFb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b4063a7c-6905-4f76-af71-45f893145d7e",
+              "leftValue": "={{ $json['ID Mail'] }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        48,
+        -160
+      ],
+      "id": "511d0375-616e-4709-a066-700328b1840a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        64
+      ],
+      "id": "487886c7-08d6-4aea-9d52-a48c6cf96c3d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs",
+          "mode": "list",
+          "cachedResultName": "Jamia Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N9k_frpvp_WjQ9XGGuNUHWgfJQkxXYuJW7df9EUTaIs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        64
+      ],
+      "id": "939fa808-9566-4a89-a221-ee8dc323873c",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc1dbd0e-a757-49c9-8ebb-9df8449e5ee7",
+              "name": "sheetName",
+              "value": "=Attendance {{$now.format(\"yyyy-MM-dd\")}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        64
+      ],
+      "id": "245e3948-a910-46e7-8829-b4e42d1e73b2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8",
+          "mode": "list",
+          "cachedResultName": "Attendence",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8/edit?usp=drivesdk"
+        },
+        "title": "={{ $json.sheetName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        64
+      ],
+      "id": "fa541a5f-a301-4568-bd41-f86fc636a0bc",
+      "name": "Create sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "765fe172-ff91-4424-b587-5e32ab252d0a",
+              "name": "Name",
+              "value": "={{ $('Get row(s) in sheet').item.json.studentName }}",
+              "type": "string"
+            },
+            {
+              "id": "50c29019-a668-4318-bb63-c96978cdcacf",
+              "name": "Phone",
+              "value": "={{ $('Get row(s) in sheet').item.json.phoneNumber }}",
+              "type": "number"
+            },
+            {
+              "id": "6f893c96-76bf-428d-964f-26a1751a0066",
+              "name": "email",
+              "value": "={{ $('Get row(s) in sheet').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "835332a1-eaf4-45eb-b047-bb8586399d82",
+              "name": "Fajr",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "2683b50e-d7ca-4b75-9739-cefb307bbeef",
+              "name": "Zuhr",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "694e0f0d-41a3-4397-8d13-c871af1ef700",
+              "name": "Maghrib",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        64
+      ],
+      "id": "2b43bc84-64b1-4d5d-ab73-f1599de4584d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8",
+          "mode": "list",
+          "cachedResultName": "Attendence",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Edit Fields').item.json.sheetName }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Phone": "={{ $json.Phone }}",
+            "email": "={{ $json.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fajr",
+              "displayName": "Fajr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Zuhr",
+              "displayName": "Zuhr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Maghrib",
+              "displayName": "Maghrib",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        64
+      ],
+      "id": "be896f0c-1c7d-4326-9564-11e337c57c6f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8",
+          "mode": "list",
+          "cachedResultName": "Attendence",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s39hCzrDjdsrjGpudD58W-qg_5LlmOChW0OVqPNqIF8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Edit Fields').item.json.sheetName }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        64
+      ],
+      "id": "6d9e6a54-90aa-45c5-b513-014ab89f3747",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet1').item.json.email }}",
+        "subject": "=Attendance Reminder – {{ $now.format(\"yyyy-MM-dd\") }}\n",
+        "message": "Assalamu Alaikum {{ $json.Name }},  Our records show that your attendance for today (Fajr, Zuhr, Maghrib) has not been marked.  If this is a mistake, please inform us. Otherwise, kindly ensure regular attendance.  JazakAllah khair.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        64
+      ],
+      "id": "a726794e-5b89-4226-aeb7-8287b5ec5927",
+      "name": "Send a message1",
+      "webhookId": "66c96c42-6d7b-4a0d-a0a2-ed441c82333e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bWipNoRSPdvbiOFb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Read Active Students1').item.json.email }}",
+        "subject": "=Fee Remainder  {{ $('Workflow Configuration - Finance').item.json.currentMonth }}",
+        "message": "=It is to be informed that your fee dues for  {{ $('Workflow Configuration - Finance').item.json.dueDate }} is not cleared for your ward <br> {{ $('Read Active Students1').item.json.studentName }} <br> {{ $('Read Active Students1').item.json.guardianName }} <br> Regards <br> Admin Jamia",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        1216
+      ],
+      "id": "38b630a2-2b59-4c04-a8c5-928ebff8059c",
+      "name": "Send a message2",
+      "webhookId": "38609c5d-4d25-4c95-aa86-ecf90464d08f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bWipNoRSPdvbiOFb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "hafizsafi452@gmail.com",
+        "toEmail": "={{ $json.Email }}",
+        "subject": "={{ 'Exam Results - ' + $('Calculate Total and Grade').item.json.examName }}",
+        "html": "={{ '<h2>Exam Results</h2><p>Student ID: ' + $('Calculate Total and Grade').item.json.studentID + '</p><p>Exam: ' + $('Calculate Total and Grade').item.json.examName + '</p><p>Total Marks: ' + $('Calculate Total and Grade').item.json.totalMarks + '/300</p><p>Percentage: ' + $('Calculate Total and Grade').item.json.percentage + '%</p><p>Grade: ' + $('Calculate Total and Grade').item.json.grade + '</p>' }}",
+        "options": {}
+      },
+      "id": "7f83b80f-cb57-44c7-8c56-5e5a7eff8720",
+      "name": "Send Result via Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        720
+      ],
+      "webhookId": "20c74dc4-1516-4a73-9e28-c7dc77b458ae",
+      "credentials": {
+        "smtp": {
+          "id": "yYtUPkWdcLututXc",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxOutputTokens": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        512
+      ],
+      "id": "a93600bc-6298-455f-b4ef-91773665bd8f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "SAMFwuwCTDIzrb2a",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "notes": "Analyze the student’s last 7 days progress.\n\nRespond STRICTLY in this format:\n\nSTATUS: \nTREND:\nACTION:\nRISK LEVEL:\n\nDo not add anything else.\n\n"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Store Progress Data1').item.json.Emaiil }}",
+        "subject": "=Report  {{ $('Store Progress Data1').item.json.Name }}",
+        "message": "={{ $('Analyze Progress Trend').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1296,
+        400
+      ],
+      "id": "11ce4601-7726-4460-a78f-fb5f0ee4c7c7",
+      "name": "Send a message3",
+      "webhookId": "7e20fed7-c00b-46dc-a65c-82d72b51e211",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bWipNoRSPdvbiOFb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "Finance_finish",
+        "sheetsUi": {
+          "sheetValues": [
+            {
+              "title": "={{ $('Workflow Configuration - Finance').item.json.currentMonth }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        944
+      ],
+      "id": "0e058075-bc87-4b90-80ee-7e7316d517d9",
+      "name": "Submitted Fee Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rl6A4QMylvbFmZ62",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Configuration - Admission": {
+      "main": [
+        [
+          {
+            "node": "Generate Student ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Student ID": {
+      "main": [
+        [
+          {
+            "node": "Store Student Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Late or Absent": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration - Progress": {
+      "main": [
+        [
+          {
+            "node": "Store Progress Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Progress Trend": {
+      "main": [
+        [
+          {
+            "node": "Prepare Admin Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration - Exam": {
+      "main": [
+        [
+          {
+            "node": "Calculate Total and Grade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Total and Grade": {
+      "main": [
+        [
+          {
+            "node": "Save Exam Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monthly Fee Schedule": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration - Finance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration - Finance": {
+      "main": [
+        [
+          {
+            "node": "Read Active Students1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Students": {
+      "main": [
+        [
+          {
+            "node": "Submitted Fee Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Fee Invoice Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Fee Reminder Message": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Student Record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Progress Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration - Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Progress Data1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Last 7 Days Progress1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Last 7 Days Progress1": {
+      "main": [
+        [
+          {
+            "node": "Analyze Progress Trend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exam Marks Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration - Exam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Exam Results1": {
+      "main": [
+        [
+          {
+            "node": "Send Result via Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Active Students1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Students",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Fee Invoice Record": {
+      "main": [
+        [
+          {
+            "node": "Prepare Fee Reminder Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admission Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration - Admission",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Check if Late or Absent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Students",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Progress Trend",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Admin Alert": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2642ce9a-b397-4353-bd70-ae146c9f16f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "125bde39be84d78f4113a61bc65c737a1f3c7b42d166793a951c91022c58af7e"
+  },
+  "id": "Et9BBHIoQfeW43Zh4qBYr",
+  "tags": []
+}
